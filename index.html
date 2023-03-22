@@ -120,6 +120,12 @@
 
     document.querySelector('create-chat').addEventListener('created', (evt) => {
       document.querySelector('left-menu').update()
+      document.querySelector('#main-content').innerHTML = `<chat-view chat-id="${evt.detail}" />`
+    })
+
+    // Listen for any bubbled update-menu events on main-content
+    document.querySelector('#main-content').addEventListener('update-menu', (evt) => {
+      document.querySelector('left-menu').update()
     })
 
 

@@ -383,9 +383,15 @@ class ChatView extends HTMLElement {
       .then((res) => {
         try {
           if (res.choices[0].message.content) {
-            chat.name = res.choices[0].message.content.replace(/^[^"]*"([^"]+)"[^"]*$/, '$1')
+            chat.name = res.choices[0].message.content
+            chat.name = chat.name.replace(/^[^"]*"([^"]+)"[^"]*$/, '$1')
+            chat.name = chat.name.replace(/Title:\s*/, '')
             chat.messages.pop()
             localStorage.setItem(this.#chatID, JSON.stringify(chat))
+            this.dispatchEvent(
+              new CustomEvent('update-menu', { composed: true, bubbles: true })
+            )
+
           }
         } catch (err) {
           // TODO: show a notification on error
