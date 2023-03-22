@@ -1,6 +1,6 @@
-import './components/chatty-menu-item.js'
-import './components/chatty-menu.js'
-import './components/chatty-icon.js'
+import '../components/chatty-menu-item.js'
+import '../components/chatty-menu.js'
+import '../components/chatty-icon.js'
 
 class LeftMenu extends HTMLElement {
   #controller
