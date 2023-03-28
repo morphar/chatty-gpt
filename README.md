@@ -34,8 +34,7 @@ Vite will help you keep all external dependencies local (served by you) and up t
 Using Web Components alone, will only work for modern browsers, so you might as well go Framework shopping, if you need to support any browser, that is no longer supported by their creators (e.g. Internet Explorer, older Chrome, Safari, etc.).  
 
 ## TODO
- - [ ] When something happens in the chat view, that concerns e.g. the left menu, it should dispatch an event
- - [ ] Index should call update() on left-menu, when there's relevant events from e.g. chat-view
+ - [ ] Currently, chats in the menu isn't ordered by create time - they should be
  - [ ] Add an abort controller to the OpenAI calls
  - [ ] Should "Return" send the message?
  - [ ] Minus icon is missing, when expanding "Advanced settings" in "Create a new chat"
@@ -53,6 +52,11 @@ Using Web Components alone, will only work for modern browsers, so you might as 
    - [ ] Scroll to bottom on stream (when already at bottom - check before inserting delta)
    - [ ] Scroll to bottom, when inserting new message
  - [ ] Add header on code examples, should contain language and a copy button/link (:has doesn't work in firefox...)
+
+## Known issues
+ - [ ] Various weird issues and overwrites - seems to be an issue with how localStorage is handled
+ - [ ] "Create chat" button doesn't work after another chat was created
+ - [ ] Running Chatty GPT in multiple tabs, causes weird issues like duplicate chats
 
 ## TODO later / maybe
  - [ ] Add some template system messages (e.g. frontend developer, Go developer, marketing expert, ...)

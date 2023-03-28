@@ -28,12 +28,12 @@ class CreateChat extends HTMLElement {
           <div class="mt-2">
             <select id="model" name="model"
               class="block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
-              <option disabled value="gpt-4">gpt-4</option>
-              <option disabled value="gpt-4-0314">gpt-4-0314</option>
-              <option disabled value="gpt-4-32k">gpt-4-32k</option>
-              <option disabled value="gpt-4-32k-0314">gpt-4-32k-0314</option>
               <option selected value="gpt-3.5-turbo" selected>gpt-3.5-turbo</option>
               <option value="gpt-3.5-turbo-0301">gpt-3.5-turbo-0301</option>
+              <option value="gpt-4">gpt-4</option>
+              <option value="gpt-4-0314">gpt-4-0314</option>
+              <option value="gpt-4-32k">gpt-4-32k</option>
+              <option value="gpt-4-32k-0314">gpt-4-32k-0314</option>
             </select>
           </div>
           <p class="mt-2 text-xs text-gray-500">Only tested with gpt-3.5, so far</p>
