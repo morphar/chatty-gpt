@@ -112,6 +112,7 @@ export class ChatCompletion extends OpenAI {
     options = options || {}
 
     delete options.name
+    delete options.createdAt
     delete options.stream
 
     return await this.post(this.endpoint, options).then((res) => res.json())
@@ -162,6 +163,9 @@ export class ChatCompletion extends OpenAI {
 
   async createStream (options, cb) {
     options = options || {}
+
+    delete options.name
+    delete options.createdAt
 
     options.stream = true
 

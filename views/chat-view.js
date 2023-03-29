@@ -45,13 +45,25 @@ class ChatView extends HTMLElement {
 
     this.#completionAPI = new ChatCompletion(this.#apiKey, this.#orgID)
 
+    let chat = {}
+    try {
+      chat = JSON.parse(localStorage.getItem(this.#chatID))
+    } catch (err) {
+      console.log(err)
+      return
+    }
+
     this.shadowRoot.innerHTML = `
 <link href="css/global.min.css" rel="stylesheet">
 <!-- <link href="css/highlightjs/default.min.css" rel="stylesheet"> -->
 <link href="css/highlightjs/github-dark.min.css" rel="stylesheet">
 
 <div id="chat-container" class="h-full overflow-y-auto">
-  <dl class="mb-48"></dl>
+  <dl class="mb-48">
+    <div id="chat-gpt-model"class="py-3 border-b border-b-gray-300 bg-gray-50 text-gray-400 text-center text-sm">
+      Model: ${chat.model}
+    </div>
+  </dl>
 </div>
 
 <div id="message-input" class="absolute bottom-0 left-0 w-full mx-auto py-6 border-t border-gray-300 bg-white bg-opacity-70 backdrop-blur-sm backdrop-filter">
@@ -71,29 +83,21 @@ class ChatView extends HTMLElement {
 
 
     // Build the chat messages
-    let chat = {}
-    try {
-      chat = JSON.parse(localStorage.getItem(this.#chatID))
-    } catch (err) {
-      console.log(err)
-      return
-    }
-
     const dl = this.shadowRoot.querySelector('dl')
 
     for (let i = 0; i < chat.messages.length; i++) {
       const msgEl = this.#createChatMessageEl(chat.messages[i])
       dl.appendChild(msgEl)
 
-      // this.#scrollToBottom()
+      this.#scrollToBottom()
     }
 
     // Check if the last message is a user message
     if (chat.messages[chat.messages.length - 1].role === 'user') {
       this.#getResponseFromOpenAI()
+    } else {
+      this.#generateChatTitle()
     }
-
-    this.#generateChatTitle()
   }
 
   disconnectedCallback () {
@@ -163,7 +167,7 @@ class ChatView extends HTMLElement {
     // Create the icon <dt>
     const dt = document.createElement('dt')
     dt.classList.add('text-sm', 'font-medium', 'text-gray-500')
-    dt.innerHTML = `<chatty-icon name="${iconName}" class="mx-auto text-gray-800 h-6 w-6" />`
+    dt.innerHTML = `<chatty-icon name="${iconName}" class="mx-auto h-6 w-6" />`
     containerEl.appendChild(dt)
 
     // Create the content dd
@@ -172,9 +176,17 @@ class ChatView extends HTMLElement {
     dd.classList.add(
       'message-content',
       'prose',
-      'text-gray-900',
       'sm:col-span-11',
     )
+
+    switch (chatMessage.role) {
+      case 'system':
+        dd.classList.add('text-gray-400')
+        break
+      default:
+        dd.classList.add('text-gray-900')
+    }
+
 
     dd.innerHTML = this.#markdownToHTML(chatMessage.content)
 
@@ -273,16 +285,7 @@ class ChatView extends HTMLElement {
       return
     }
 
-    // Create a new message element
-    // v on error: remove it again
-    // v on callback: append to the new message element
-    // - on done:
-    //   v replace the content of the new element
-    //   v add the message to the chat.messages
-    //   - if missing name: ask chat-gpt to create one
-    //   v save the chat object to localStorage
-
-    const msgEl = this.#createChatMessageEl({ role: 'system', content: '' })
+    const msgEl = this.#createChatMessageEl({ role: 'assistant', content: '' })
     this.shadowRoot.querySelector('dl').append(msgEl)
 
     this.#scrollToBottom()
@@ -291,9 +294,6 @@ class ChatView extends HTMLElement {
 
     const options = Object.assign({}, chat)
     delete options.name
-
-    // TODO:
-    // TITLE PROMPT: Can you come up with a name or title for this chat? It should summarize the content, but be kept at around 2 or 3 words.
 
     const lastMsgIdx = (chat.messages.push({ role: 'assistant', content: '' })) - 1
 
@@ -356,7 +356,7 @@ class ChatView extends HTMLElement {
   #generateChatTitle () {
     if (!this.#completionAPI) {
       // TODO: Probably pop the settings modal
-      console.log('no openai!')
+      console.log('no OpenAI!')
       return
     }
 
@@ -375,17 +375,21 @@ class ChatView extends HTMLElement {
       return
     }
 
-    delete chat.name
+    const options = Object.assign({}, chat)
 
-    chat.messages.push({ role: 'user', content: 'Can you come up with a title for this chat? It should summarize the content in about 3 or 4 words.' })
+    options.messages.push({ role: 'user', content: 'Can you come up with a title for this chat? It should summarize the content in about 3 or 4 words.' })
 
-    this.#completionAPI.create(chat)
+    this.#completionAPI.create(options)
       .then((res) => {
         try {
           if (res.choices[0].message.content) {
             chat.name = res.choices[0].message.content
             chat.name = chat.name.replace(/^[^"]*"([^"]+)"[^"]*$/, '$1')
             chat.name = chat.name.replace(/Title:\s*/, '')
+            if (chat.name.split(' ').length > 5) {
+              chat.name = chat.name.split(' ').splice(0, 5).join(' ')
+              chat.name += '...'
+            }
             chat.messages.pop()
             localStorage.setItem(this.#chatID, JSON.stringify(chat))
             this.dispatchEvent(
@@ -396,6 +400,7 @@ class ChatView extends HTMLElement {
         } catch (err) {
           // TODO: show a notification on error
           console.log(err)
+          console.log(res)
         }
       })
       .catch((err) => {

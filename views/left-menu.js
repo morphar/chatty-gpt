@@ -64,25 +64,18 @@ class LeftMenu extends HTMLElement {
   connectedCallback () {
     this.#updateChatItems()
 
-    for (const menuItem of this.querySelectorAll('chatty-menu-item')) {
-      if (menuItem.id) {
-        if (menuItem.id.substring(0, 10) === 'menu-item-') {
-          menuItem.addEventListener('click', (evt) => {
-            this.dispatchEvent(new CustomEvent(menuItem.id.substring(10), { detail: menuItem.id, composed: true, bubbles: true }))
-          }, { signal: this.#controller.signal })
-
-        } else if (menuItem.id.substring(0, 5) === 'chat-') {
-          menuItem.addEventListener('click', (evt) => {
-            this.dispatchEvent(new CustomEvent('chat', { detail: menuItem.id, composed: true, bubbles: true }))
-          }, { signal: this.#controller.signal })
-
+    const chattyMenu = this.querySelector('chatty-menu')
+    chattyMenu.addEventListener('click', (evt) => {
+      if (evt.target.id) {
+        if (evt.target.id.substring(0, 10) === 'menu-item-') {
+          this.dispatchEvent(new CustomEvent(evt.target.id.substring(10), { detail: evt.target.id, composed: true, bubbles: true }))
+        } else if (evt.target.id.substring(0, 5) === 'chat-') {
+          this.dispatchEvent(new CustomEvent('chat', { detail: evt.target.id, composed: true, bubbles: true }))
         } else {
-          menuItem.addEventListener('click', (evt) => {
-            this.dispatchEvent(new CustomEvent(menuItem.id, { composed: true, bubbles: true }))
-          }, { signal: this.#controller.signal })
+          this.dispatchEvent(new CustomEvent(evt.target.id, { composed: true, bubbles: true }))
         }
       }
-    }
+    })
 
     // This will ensure, that the menu gets updated, if another tab adds a chat.
     // This seems to happen on document load as well.
@@ -101,6 +94,8 @@ class LeftMenu extends HTMLElement {
     const chatItems = this.querySelector('#menu-chat-items')
     chatItems.innerHTML = ''
 
+    let menuItems = []
+
     for (let i = 0, len = localStorage.length; i < len; i++) {
       const key = localStorage.key(i)
       if (key.substring(0, 5) !== 'chat-') {
@@ -114,18 +109,26 @@ class LeftMenu extends HTMLElement {
         continue
       }
 
+      item.key = key
+      menuItems.push(item)
+    }
+
+    menuItems.sort((itemA, itemB) => { return itemB.createdAt - itemA.createdAt })
+
+    for (let i = 0, len = menuItems.length; i < len; i++) {
+      const item = menuItems[i]
+
       const menuItem = document.createElement('chatty-menu-item')
-      menuItem.id = key
+      menuItem.id = item.key
       menuItem.innerHTML = `
 <chatty-icon
   name="chat-bubble-left-right"
   class="text-gray-400 group-hover:text-gray-500 mr-3 h-6 w-6 flex-shrink-0">
 </chatty-icon>
-${item.name ? item.name : key.substring(5)}
+${item.name ? item.name : item.key.substring(5)}
     `
 
       chatItems.appendChild(menuItem)
-
     }
   }
 }

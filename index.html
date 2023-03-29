@@ -118,7 +118,7 @@
 
     // "Create chat" listener
 
-    document.querySelector('create-chat').addEventListener('created', (evt) => {
+    document.querySelector('#main-content').addEventListener('created', (evt) => {
       document.querySelector('left-menu').update()
       document.querySelector('#main-content').innerHTML = `<chat-view chat-id="${evt.detail}" />`
     })

@@ -36,7 +36,6 @@ class CreateChat extends HTMLElement {
               <option value="gpt-4-32k-0314">gpt-4-32k-0314</option>
             </select>
           </div>
-          <p class="mt-2 text-xs text-gray-500">Only tested with gpt-3.5, so far</p>
         </div>
 
         <dl class="col-span-6 space-y-6 divide-y divide-white/10 p-2 bg-gray-200 bg-opacity-50">
@@ -134,7 +133,7 @@ class CreateChat extends HTMLElement {
     evt.preventDefault()
     evt.stopPropagation()
 
-    const chat = { messages: [] }
+    const chat = { messages: [], createdAt: new Date().getTime() }
 
     const formElements = evt.target.elements;
 
