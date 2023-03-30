@@ -1,6 +1,6 @@
 ## Chatty GPT is a simple alternative to ChatGPT
 
-It works by using the OpenAI chat completions API (currently using the model: gpt-3.5-turbo).
+It works by using the OpenAI chat completions API (e.g. gpt-3.5-turbo, gpt-4, etc.).
 You will need to have (paid) access to this API.
 
 All chats are kept in localStorage, so you won't be able to access it from any other browser or device.  
