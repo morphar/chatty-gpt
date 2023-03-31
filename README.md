@@ -34,6 +34,7 @@ Vite will help you keep all external dependencies local (served by you) and up t
 Using Web Components alone, will only work for modern browsers, so you might as well go Framework shopping, if you need to support any browser, that is no longer supported by their creators (e.g. Internet Explorer, older Chrome, Safari, etc.).  
 
 ## TODO
+ - [ ] When chat history becomes too big, only use the last _n_ messages
  - [ ] Add an abort controller to the OpenAI calls
  - [ ] Should "Return" send the message?
  - [ ] Minus icon is missing, when expanding "Advanced settings" in "Create a new chat"
