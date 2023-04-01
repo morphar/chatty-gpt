@@ -28,16 +28,14 @@ And there is no build step - it's just a couple of small dev services.
 
 ## Conclusions (so far)
 
-While it's possible to avoid frameworks, just by using Web Components, you don't need many external dependencies, before your life is imply easier with something like [Vite](https://vitejs.dev).  
-Vite will help you keep all external dependencies local (served by you) and up to date.
+While it's possible to avoid frameworks, just by using Web Components, you don't need many external dependencies, before your life is simply easier. E.g. by using somethinh like [Vite](https://vitejs.dev).  
+Vite will help you keep all external dependencies local (served by you) and up to date and enable hot reloading.
 
-Using Web Components alone, will only work for modern browsers, so you might as well go Framework shopping, if you need to support any browser, that is no longer supported by their creators (e.g. Internet Explorer, older Chrome, Safari, etc.).  
+Using Web Components alone, will only work for modern browsers, so you might as well go Framework shopping, if you need to support any browser that is no longer supported by their creators (e.g. Internet Explorer, older Chrome, Safari, etc.).  
 
 ## TODO
  - [ ] When chat history becomes too big, only use the last _n_ messages
  - [ ] Add an abort controller to the OpenAI calls
- - [ ] Should "Return" send the message?
- - [ ] Minus icon is missing, when expanding "Advanced settings" in "Create a new chat"
  - [ ] Settings for the chat (including the name)
  - [ ] It should be possible to delete a chat
  - [ ] Make sure that changes to chat settings are used immediately after

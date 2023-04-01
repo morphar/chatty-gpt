@@ -59,7 +59,7 @@ class ChatView extends HTMLElement {
 <link href="css/highlightjs/github-dark.min.css" rel="stylesheet">
 
 <div id="chat-container" class="h-full overflow-y-auto">
-  <dl class="mb-48">
+  <dl class="mb-32">
     <div id="chat-gpt-model"class="py-3 border-b border-b-gray-300 bg-gray-50 text-gray-400 text-center text-sm">
       Model: ${chat.model}
     </div>
@@ -70,7 +70,7 @@ class ChatView extends HTMLElement {
   <form class="relative block mx-auto max-w-3xl">
     <!-- <textarea name="message" id="message" class="w-full resize-none rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:py-1.5 sm:text-sm sm:leading-6"></textarea> -->
     <textarea name="message" id="message" class="w-full resize-none rounded-md border border-gray-300 focus:border-gray-300 shadow-md text-gray-900 focus:ring-0 focus:ring-offset-0 placeholder:text-gray-400 sm:py-1.5 sm:text-sm sm:leading-6"></textarea>
-      <button class="absolute p-1.5 right-0 bottom-2.5 rounded-md text-gray-500">
+      <button title="Cmd+Enter or Ctrl+Enter to submit" class="absolute p-1.5 right-0 bottom-2.5 rounded-md text-gray-500">
         <chatty-icon name="paper-airplane-solid" class="h-5 w-5 -rotate-45 stroke-none fill-gray-400 hover:fill-teal-600"></chatty-icon>
       </button>
   </form>
@@ -81,6 +81,11 @@ class ChatView extends HTMLElement {
 
     this.shadowRoot.querySelector('form').addEventListener('submit', this.#onSubmit.bind(this), { signal: this.#controller.signal })
 
+    this.shadowRoot.querySelector('#message').addEventListener('keydown', (evt) => {
+      if ((evt.metaKey || evt.ctrlKey) && evt.key === 'Enter') {
+        this.#onSubmit(evt)
+      }
+    }, { signal: this.#controller.signal })
 
     // Build the chat messages
     const dl = this.shadowRoot.querySelector('dl')
@@ -118,13 +123,27 @@ class ChatView extends HTMLElement {
   //   // }
   // }
 
-  #scrollToBottom () {
-    // Scroll (almos) to the bottom
-    const clientHeight = this.shadowRoot.querySelector('#chat-container').clientHeight
-    const scrollHeight = this.shadowRoot.querySelector('#chat-container').scrollHeight
-    const inputHeight = this.shadowRoot.querySelector('#message-input').clientHeight
+  #atBottom () {
+    const scrollHeight = this.shadowRoot.querySelector('#chat-container').scrollHeight // Entire view, including off-screen
+    const clientHeight = this.shadowRoot.querySelector('#chat-container').clientHeight // The visible view
+    const inputHeight = this.shadowRoot.querySelector('#message-input').clientHeight // Height if the message input textarea
+    const scrollTop = this.shadowRoot.querySelector('#chat-container').scrollTop
 
-    const scrollTo = scrollHeight - clientHeight + (inputHeight - 192)
+    const minScroll = scrollHeight - clientHeight + (inputHeight - 128)
+    if (scrollTop >= minScroll) {
+      return true
+    }
+    return false
+  }
+
+  #scrollToBottom () {
+    // Scroll (almost) to the bottom
+    const scrollHeight = this.shadowRoot.querySelector('#chat-container').scrollHeight // Entire view, including off-screen
+    const clientHeight = this.shadowRoot.querySelector('#chat-container').clientHeight // The visible view
+    const inputHeight = this.shadowRoot.querySelector('#message-input').clientHeight // Height if the message input textarea
+    const scrollTop = this.shadowRoot.querySelector('#chat-container').scrollTop
+
+    const scrollTo = scrollHeight - clientHeight + (inputHeight - 128)
 
     this.shadowRoot.querySelector('#chat-container').scrollTo(0, scrollTo)
   }
@@ -221,13 +240,7 @@ class ChatView extends HTMLElement {
     evt.preventDefault()
     evt.stopPropagation()
 
-    let msg = ''
-    for (let i = 0; i < evt.target.elements.length; i++) {
-      if (evt.target.elements[i].nodeName === 'TEXTAREA') {
-        msg = evt.target.elements[i].value
-        break
-      }
-    }
+    let msg = this.shadowRoot.querySelector('textarea').value
 
     if (!msg.trim()) {
       return
@@ -258,6 +271,8 @@ class ChatView extends HTMLElement {
       this.shadowRoot.querySelector('dl').removeChild(msgEl)
     }
 
+    this.shadowRoot.querySelector('textarea').value = ''
+
     this.#scrollToBottom()
 
     this.#getResponseFromOpenAI()
@@ -285,10 +300,16 @@ class ChatView extends HTMLElement {
       return
     }
 
+    let scrollAfter = this.#atBottom()
     const msgEl = this.#createChatMessageEl({ role: 'assistant', content: '' })
     this.shadowRoot.querySelector('dl').append(msgEl)
 
-    this.#scrollToBottom()
+    // // Only scroll, if the user hasn't scrolled up (kinda like in a terminal window)
+    // const scrollTo = scrollHeight - clientHeight + (inputHeight - 128)
+
+    if (scrollAfter) {
+      this.#scrollToBottom()
+    }
 
     const msgContentEl = msgEl.querySelector('.message-content')
 
@@ -312,8 +333,11 @@ class ChatView extends HTMLElement {
       // Set the innerHTML with the content converted from markdown
       try {
         if (deltaMsg.choices[0].delta.content) {
+          scrollAfter = this.#atBottom()
           msgContentEl.innerHTML = this.#markdownToHTML(chat.messages[lastMsgIdx].content)
-          this.#scrollToBottom()
+          if (scrollAfter) {
+            this.#scrollToBottom()
+          }
         }
       } catch (err) {
         // TODO: show a notification on error

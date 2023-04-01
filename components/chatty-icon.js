@@ -93,8 +93,7 @@ class ChattyIcon extends HTMLElement {
     ${svgPaths}
 </svg>`
 
-
-
+    this.querySelector('svg').classList.remove('hidden')
   }
 
   connectedCallback () {
