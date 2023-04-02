@@ -5,8 +5,7 @@ You will need to have (paid) access to this API.
 
 Using gpt-4 through the API, is much faster than using ChatGPT plus and doesn't have message limits.  
 
-All chats are kept in localStorage, so you won't be able to access it from any other browser or device.  
-I plan to make a simple export and import feature though.
+All chats are kept in localStorage, so you won't be able to access them from any other browser or device, unless you use the export / import functionality.  
 
 ## Why?
 
