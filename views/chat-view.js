@@ -9,6 +9,14 @@ import detectOS from '../js/detect-os.js'
 // import go from '../js/highlightjs/languages/go.min.js'
 // hljs.registerLanguage('go', go);
 
+const tokenLimits = {
+  'gpt-3.5-turbo': 4096,
+  'gpt-3.5-turbo-0301': 4096,
+  'gpt-4': 8192,
+  'gpt-4-0314': 8192,
+  'gpt-4-32k': 32768,
+  'gpt-4-32k-0314': 32768
+}
 
 class ChatView extends HTMLElement {
   static get observedAttributes () {
@@ -120,12 +128,6 @@ class ChatView extends HTMLElement {
 
   disconnectedCallback () {
     this.#controller.abort()
-  }
-
-  #getTokenCount (str) {
-    // This is currently just a rough estimate (1 token = ~4 chars), calculated according to:
-    // https://platform.openai.com/tokenizer
-    return (str.length / 4)
   }
 
   #atBottom () {
@@ -283,6 +285,12 @@ class ChatView extends HTMLElement {
     this.#getResponseFromOpenAI()
   }
 
+  #getTokenCount (str) {
+    // This is currently just a rough estimate (1 token = ~4 chars), calculated according to:
+    // https://platform.openai.com/tokenizer
+    return (str.length / 4)
+  }
+
   #getResponseFromOpenAI () {
     if (!this.#completionAPI) {
       // TODO: Probably pop the settings modal
@@ -322,6 +330,40 @@ class ChatView extends HTMLElement {
     delete options.name
 
     const lastMsgIdx = (chat.messages.push({ role: 'assistant', content: '' })) - 1
+
+    // Try to keep around 1k - 2k tokens avilable for the response, depending on avilable tokens for the model.
+    let reqMessages = []
+    let curTokens = 0
+    let availableTokens = tokenLimits[chat.model]
+    let responseTokens = (availableTokens === 4096) ? 1024 : 2048
+    let maxTokens = availableTokens - responseTokens
+
+    // Always keep system message, if it exists.
+    if (options.messages[0] && options.messages[0].role === 'system') {
+      curTokens = this.#getTokenCount(JSON.stringify(options.messages[0]))
+    }
+
+    // Build the new request messages array
+    for (let i = (options.messages.length - 1); i >= 0; i--) {
+      const tokens = this.#getTokenCount(JSON.stringify(options.messages[i]))
+      if ((curTokens + tokens) > maxTokens) {
+        break
+      }
+      curTokens += tokens
+
+      reqMessages.unshift(options.messages[i])
+    }
+
+    if (reqMessages.length && reqMessages[0].role === 'assistant') {
+      reqMessages.shift()
+    }
+
+    if (options.messages[0] && options.messages[0].role === 'system') {
+      reqMessages.unshift(options.messages[0])
+    }
+
+    options.messages = reqMessages
+    options.max_tokens = Math.max((availableTokens - curTokens), responseTokens)
 
     this.#completionAPI.createStream(options, (deltaMsg) => {
       // Each delta callback attempts to add the delta to the new message and save it to localStorage
