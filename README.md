@@ -35,6 +35,7 @@ Using Web Components alone, will only work for modern browsers, so you might as 
 
 ## TODO
  - [ ] When chat history becomes too big, only use the last _n_ messages
+ - [ ] When creating a new chat, suggest system messages, based on previously used system messages
  - [ ] Add an abort controller to the OpenAI calls
  - [ ] Settings for the chat (including the name)
  - [ ] It should be possible to delete a chat
@@ -42,8 +43,6 @@ Using Web Components alone, will only work for modern browsers, so you might as 
  - [ ] Add notifications for success and error actions
  - [ ] (Re-)generate streaming response
  - [ ] Icon or button, to re-generate last response
- - [ ] Export all data from localStorage (expect key and id)
- - [ ] Import all data to localStorage (expect key and id)
  - [ ] Come up with an indicator for when the stream is done (or working - like the ... indicator that openai uses) 
  - [ ] Scroll when appropriate
    - [ ] Scroll to bottom on load

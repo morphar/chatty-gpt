@@ -99,9 +99,10 @@
       document.querySelector('#settings-modal').setAttribute('visible', true)
     }
 
-    // Close the modal, after saving the settings
-    document.querySelector('settings-view').addEventListener('saved', (evt) => {
+    // Close the modal, when done event is received
+    document.querySelector('settings-view').addEventListener('done', (evt) => {
       document.querySelector('#settings-modal').setAttribute('visible', false)
+      document.querySelector('left-menu').update()
     })
 
     // Clear localStorage, update settings view and hide the prompt 

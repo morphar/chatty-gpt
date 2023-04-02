@@ -1,4 +1,5 @@
 import './chat-parameters.js'
+import detectOS from '../js/detect-os.js'
 
 class CreateChat extends HTMLElement {
   #controller
@@ -9,6 +10,18 @@ class CreateChat extends HTMLElement {
     this.#controller = new AbortController()
 
     this.attachShadow({ mode: 'open' })
+
+    const os = detectOS()
+    let submitShortcut = ''
+    if (os === 'Windows' || os === 'Linux') {
+      submitShortcut = '<kbd class="items-center rounded border border-gray-200 px-1">Ctrl</kbd>'
+      submitShortcut += '<span class="text-gray-500"> + </span>'
+      submitShortcut += '<kbd class="items-center rounded border border-gray-200 px-1">↵</kbd>'
+    } else if (os === 'macOS') {
+      submitShortcut = '<kbd class="items-center rounded border border-gray-200 px-1">⌘</kbd>'
+      submitShortcut += '<span class="text-gray-500"> + </span>'
+      submitShortcut += '<kbd class="items-center rounded border border-gray-200 px-1">↵</kbd>'
+    }
 
     this.shadowRoot.innerHTML = `
 <link href="css/global.min.css" rel="stylesheet">
@@ -70,10 +83,14 @@ class CreateChat extends HTMLElement {
         <div class="sm:col-span-6">
           <label for="user" class="block text-sm font-medium leading-6 text-gray-900">First message
             (required)</label>
-          <div class="mt-2">
+          <div class="mt-2 relative">
             <textarea id="user" name="user" rows="3" required
               placeholder="Which code editor is better? Emacs or vim?"
               class="block w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:py-1.5 sm:text-sm sm:leading-6"></textarea>
+    <div class="absolute right-1 bottom-2.5 font-sans text-xs text-gray-400">
+      ${submitShortcut}
+    </div>
+
           </div>
           <!-- <p class="mt-2 text-xs text-gray-500">The first message helps set the behavior of the assistant.</p> -->
         </div>
@@ -104,6 +121,15 @@ class CreateChat extends HTMLElement {
       this.#createChat.bind(this),
       { signal: this.#controller.signal }
     )
+
+    this.shadowRoot.querySelector('textarea#user').addEventListener(
+      'keydown',
+      (evt) => {
+        if ((evt.metaKey || evt.ctrlKey) && evt.key === 'Enter') {
+          this.#createChat(evt)
+        }
+      },
+      { signal: this.#controller.signal })
   }
 
   disconnectedCallback () {
@@ -135,14 +161,14 @@ class CreateChat extends HTMLElement {
 
     const chat = { messages: [], createdAt: new Date().getTime() }
 
-    const formElements = evt.target.elements;
+    const formElements = this.shadowRoot.querySelector('form')
 
     for (let i = 0; i < formElements.length; i++) {
       if (formElements[i].name) {
         if (formElements[i].type === 'number') {
-          chat[formElements[i].name] = parseFloat(formElements[i].value);
+          chat[formElements[i].name] = parseFloat(formElements[i].value)
         } else if (formElements[i].value) {
-          chat[formElements[i].name] = formElements[i].value;
+          chat[formElements[i].name] = formElements[i].value
         }
       }
     }
@@ -161,7 +187,7 @@ class CreateChat extends HTMLElement {
     // This is only temporare and will be changed, after the first request
     const chatStr = JSON.stringify(chat)
 
-    const chatID = `chat-${this.randomString()}`
+    const chatID = `chat-${this.#randomString()}`
 
     localStorage.setItem(chatID, chatStr)
 
@@ -170,13 +196,14 @@ class CreateChat extends HTMLElement {
     )
   }
 
-  randomString (length = 8) {
-    let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  // Move to a "utility" class
+  #randomString (length = 8) {
+    let result = ''
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     for (let i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
+      result += characters.charAt(Math.floor(Math.random() * characters.length))
     }
-    return result;
+    return result
   }
 }
 

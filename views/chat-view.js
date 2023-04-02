@@ -3,6 +3,7 @@ import './chat-parameters.js'
 import { ChatCompletion } from '../js/openai.js'
 import { Remarkable } from '../js/remarkable.min.js'
 import hljs from '../js/highlightjs/highlight.min.js'
+import detectOS from '../js/detect-os.js'
 
 // import hljs from '../js/highlightjs/core.min.js'
 // import go from '../js/highlightjs/languages/go.min.js'
@@ -53,6 +54,18 @@ class ChatView extends HTMLElement {
       return
     }
 
+    const os = detectOS()
+    let submitShortcut = ''
+    if (os === 'Windows' || os === 'Linux') {
+      submitShortcut = '<kbd class="items-center rounded border border-gray-200 px-1">Ctrl</kbd>'
+      submitShortcut += '<span class="text-gray-500"> + </span>'
+      submitShortcut += '<kbd class="items-center rounded border border-gray-200 px-1">↵</kbd>'
+    } else if (os === 'macOS') {
+      submitShortcut = '<kbd class="items-center rounded border border-gray-200 px-1">⌘</kbd>'
+      submitShortcut += '<span class="text-gray-500"> + </span>'
+      submitShortcut += '<kbd class="items-center rounded border border-gray-200 px-1">↵</kbd>'
+    }
+
     this.shadowRoot.innerHTML = `
 <link href="css/global.min.css" rel="stylesheet">
 <!-- <link href="css/highlightjs/default.min.css" rel="stylesheet"> -->
@@ -70,9 +83,9 @@ class ChatView extends HTMLElement {
   <form class="relative block mx-auto max-w-3xl">
     <!-- <textarea name="message" id="message" class="w-full resize-none rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:py-1.5 sm:text-sm sm:leading-6"></textarea> -->
     <textarea name="message" id="message" class="w-full resize-none rounded-md border border-gray-300 focus:border-gray-300 shadow-md text-gray-900 focus:ring-0 focus:ring-offset-0 placeholder:text-gray-400 sm:py-1.5 sm:text-sm sm:leading-6"></textarea>
-      <button title="Cmd+Enter or Ctrl+Enter to submit" class="absolute p-1.5 right-0 bottom-2.5 rounded-md text-gray-500">
-        <chatty-icon name="paper-airplane-solid" class="h-5 w-5 -rotate-45 stroke-none fill-gray-400 hover:fill-teal-600"></chatty-icon>
-      </button>
+    <div class="absolute right-1 bottom-2.5 font-sans text-xs text-gray-400">
+      ${submitShortcut}
+    </div>
   </form>
 </div>
 `
@@ -109,19 +122,11 @@ class ChatView extends HTMLElement {
     this.#controller.abort()
   }
 
-  // attributeChangedCallback (name, oldValue, newValue) {
-  //   if (oldValue === newValue) {
-  //     return
-  //   }
-
-  //   // if (name === 'chat-id') {
-  //   //   if (!newValue || newValue === 'false') {
-  //   //     this.shadowRoot.querySelector('div').classList.add('hidden')
-  //   //   } else {
-  //   //     this.shadowRoot.querySelector('div').classList.remove('hidden')
-  //   //   }
-  //   // }
-  // }
+  #getTokenCount (str) {
+    // This is currently just a rough estimate (1 token = ~4 chars), calculated according to:
+    // https://platform.openai.com/tokenizer
+    return (str.length / 4)
+  }
 
   #atBottom () {
     const scrollHeight = this.shadowRoot.querySelector('#chat-container').scrollHeight // Entire view, including off-screen

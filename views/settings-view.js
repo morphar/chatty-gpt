@@ -1,3 +1,5 @@
+import { deepCompare, randomString } from '../js/utils.js'
+
 class SettingsView extends HTMLElement {
   #controller
 
@@ -49,7 +51,7 @@ class SettingsView extends HTMLElement {
       </div>
 
       <div>
-        <button type="submit" class="flex w-full justify-center rounded-md bg-teal-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">Save</button>
+        <button type="submit" id="save" name="save" class="flex w-full justify-center rounded-md bg-teal-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">Save</button>
       </div>
     </form>
 
@@ -74,6 +76,31 @@ class SettingsView extends HTMLElement {
         Organization settings</a>
       </p>
     </div>
+
+    <form id="import-export" class="space-y-6" action="#" method="POST" enctype="multipart/form-data">
+      <h4 class="mb-4 mt-6 text-base font-semibold leading-6 text-gray-900">Import / export chat history</h4>
+      <div class="flex justify-between">
+        <label for="import" class="cursor-pointer flex w-1/3 justify-center rounded-md bg-teal-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
+          Import
+        </label>
+        <input id="import" name="import" type="file" multiple accept="application/json,.json" class="hidden"/>
+        <!--<input id="import" name="import" type="file" accept="application/json,.json" class="block w-full text-sm text-slate-500
+          file:mr-4 file:py-2 file:px-4
+          file:rounded-full file:border-0
+          file:text-sm file:font-semibold
+          file:bg-teal-50 file:text-teal-700
+          hover:file:bg-teal-100
+        "/>-->
+
+        <!-- <button type="submit" id="import" name="import" class="flex w-1/3 justify-center rounded-md bg-teal-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
+          Import
+        </button>-->
+        <button type="submit" id="export" name="export" class="flex w-1/3 justify-center rounded-md bg-teal-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
+          Export
+        </button>
+      </div>
+    </form>
+
   </div>
 </div>
 `
@@ -82,18 +109,24 @@ class SettingsView extends HTMLElement {
   connectedCallback () {
     this.updateView()
 
-    const iconEye = this.shadowRoot.querySelector('#icon-eye')
-    const saveButton = this.shadowRoot.querySelector('button')
+    const saveButton = this.shadowRoot.querySelector('button#save')
+    const importInput = this.shadowRoot.querySelector('input#import')
+    const exportButton = this.shadowRoot.querySelector('button#export')
 
+    const iconEye = this.shadowRoot.querySelector('#icon-eye')
     // Setup the input eye icon
     if (localStorage.getItem(this.#lsKeyName)) {
       iconEye.innerHTML = this.#iconEye
     } else {
       iconEye.innerHTML = this.#iconEyeSlash
     }
-
     iconEye.addEventListener('click', this.#toggleApiKeyVisibility.bind(this), { signal: this.#controller.signal })
+
     saveButton.addEventListener('click', this.#save.bind(this), { signal: this.#controller.signal })
+    // importButton.addEventListener('click', this.#save.bind(this), { signal: this.#controller.signal })
+    exportButton.addEventListener('click', this.#exportChatHistory.bind(this), { signal: this.#controller.signal })
+
+    importInput.addEventListener('change', this.#importChatHistory.bind(this), { signal: this.#controller.signal })
   }
 
   disconnectedCallback () {
@@ -124,8 +157,150 @@ class SettingsView extends HTMLElement {
     localStorage.setItem(this.#lsOrgIDName, orgIDInput.value)
 
     this.dispatchEvent(
-      new CustomEvent('saved', { composed: true, bubbles: true })
+      new CustomEvent('done', { composed: true, bubbles: true })
     )
+  }
+
+  #exportChatHistory (evt) {
+    evt.preventDefault()
+    evt.stopPropagation()
+
+    if (!localStorage.length) {
+      return
+    }
+
+    // Extract all chats form localStorage
+    let chats = []
+    for (let i = 0, len = localStorage.length; i < len; i++) {
+      const key = localStorage.key(i)
+      if (key.substring(0, 5) !== 'chat-') {
+        continue
+      }
+
+      let chat = localStorage.getItem(key)
+      try {
+        chat = JSON.parse(chat)
+      } catch (e) {
+        continue
+      }
+
+      if (!chat.name) {
+        chat.name = key.substring(5)
+      }
+
+      chat.key = key
+
+      chats.push(chat)
+    }
+
+    // Sort according to creation time
+    chats.sort((chatA, chatB) => { return chatB.createdAt - chatA.createdAt })
+
+    // Convert JSON object to a JSON string
+    const jsonString = JSON.stringify({ chats: chats }, null, 2)
+
+    // Create a Blob object with the JSON string
+    const jsonBlob = new Blob([jsonString], { type: 'application/json' })
+
+    // Create an anchor element with a download attribute
+    const downloadAnchor = document.createElement('a')
+    downloadAnchor.download = 'chatty-gpt-chats.json'
+    downloadAnchor.href = URL.createObjectURL(jsonBlob)
+    downloadAnchor.style.display = 'none'
+
+    // Add the anchor element to the DOM
+    document.body.appendChild(downloadAnchor)
+
+    // Trigger the download by simulating a click event
+    downloadAnchor.click()
+
+    // Remove the anchor element from the DOM
+    document.body.removeChild(downloadAnchor)
+
+    this.dispatchEvent(
+      new CustomEvent('done', { composed: true, bubbles: true })
+    )
+  }
+
+  #importChatHistory (evt) {
+    evt.preventDefault()
+    evt.stopPropagation()
+
+    // Get the FileList object from the event
+    const files = evt.target.files
+
+    // Iterate over the files
+    for (const file of files) {
+      // Initialize a new FileReader instance
+      const fileReader = new FileReader()
+
+      // Add an event listener for when the file is loaded
+      fileReader.addEventListener('load', (loadEvt) => {
+        // Get the import as JSON from the event
+        let importJSON = null
+        try {
+          importJSON = JSON.parse(loadEvt.target.result)
+        } catch (e) {
+          console.log(e)
+          return
+        }
+
+        // Check that there's actually any data in the import
+        if (!importJSON.chats || !importJSON.chats.length) {
+          return
+        }
+
+        // Iterate over the chats
+        for (let i = 0; i < importJSON.chats.length; i++) {
+          try {
+            let newChat = importJSON.chats[i]
+            const key = newChat.key
+            delete newChat.key
+
+            // Check if the chat already exists
+            const curChat = localStorage.getItem(key)
+            if (!curChat) {
+              localStorage.setItem(key, JSON.stringify(newChat))
+
+            } else {
+              // Parse the chat into a JSON object
+              const cur = JSON.parse(curChat)
+
+              // Check the chat messages.
+              // If they're the same, but with more messages in the import, the local version is updated.
+              // If not, the import is created as a new chat.
+
+              let update = true
+              for (let i = 0; i < cur.messages.length; i++) {
+                if (!deepCompare(cur.messages[i], newChat.messages[i])) {
+                  update = false
+                  break
+                }
+              }
+
+              if (update) {
+                cur.messages = newChat.messages
+                localStorage.setItem(key, JSON.stringify(cur))
+              } else {
+                const chatID = `chat-${randomString()}`
+                localStorage.setItem(chatID, JSON.stringify(newChat))
+              }
+            }
+
+          } catch (e) {
+            console.log(e)
+            continue
+          }
+        }
+
+        this.dispatchEvent(
+          new CustomEvent('done', { composed: true, bubbles: true })
+        )
+      }, { signal: this.#controller.signal })
+
+      // Read the file as text
+      fileReader.readAsText(file)
+    }
   }
 }
 
