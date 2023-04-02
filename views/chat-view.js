@@ -363,7 +363,7 @@ class ChatView extends HTMLElement {
     }
 
     options.messages = reqMessages
-    options.max_tokens = Math.max((availableTokens - curTokens), responseTokens)
+    options.max_tokens = Math.floor(Math.max((availableTokens - curTokens), responseTokens))
 
     this.#completionAPI.createStream(options, (deltaMsg) => {
       // Each delta callback attempts to add the delta to the new message and save it to localStorage
