@@ -288,7 +288,7 @@ class ChatView extends HTMLElement {
   #getTokenCount (str) {
     // This is currently just a rough estimate (1 token = ~4 chars), calculated according to:
     // https://platform.openai.com/tokenizer
-    return (str.length / 4)
+    return parseInt(str.length / 4)
   }
 
   #getResponseFromOpenAI () {
