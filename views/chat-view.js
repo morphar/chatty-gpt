@@ -335,8 +335,8 @@ class ChatView extends HTMLElement {
     let reqMessages = []
     let curTokens = 0
     let availableTokens = tokenLimits[chat.model]
-    let responseTokens = (availableTokens === 4096) ? 1024 : 2048
-    let maxTokens = availableTokens - responseTokens
+    let maxResponseTokens = (availableTokens === 4096) ? 1024 : 2048
+    let maxTokens = availableTokens - maxResponseTokens
 
     // Always keep system message, if it exists.
     if (options.messages[0] && options.messages[0].role === 'system') {
@@ -363,7 +363,6 @@ class ChatView extends HTMLElement {
     }
 
     options.messages = reqMessages
-    options.max_tokens = Math.max((availableTokens - curTokens), responseTokens)
 
     this.#completionAPI.createStream(options, (deltaMsg) => {
       // Each delta callback attempts to add the delta to the new message and save it to localStorage
