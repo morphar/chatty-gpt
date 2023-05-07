@@ -1,10 +1,14 @@
 class ChatParameters extends HTMLElement {
-  static get observedAttributes () {
-    return ['temperature', 'top_p', 'presence_penalty', 'frequency_penalty'];
-  }
-
   constructor () {
     super()
+  }
+
+  connectedCallback () {
+    // Set defaults or use user's previous selections
+    let temperature = this.getAttribute('temperature') !== null ? this.getAttribute('temperature') : 0.7
+    let top_p = this.getAttribute('top_p') !== null ? this.getAttribute('top_p') : 1.0
+    let presence_penalty = this.getAttribute('presence_penalty') !== null ? this.getAttribute('presence_penalty') : 0.0
+    let frequency_penalty = this.getAttribute('frequency_penalty') !== null ? this.getAttribute('frequency_penalty') : 0.0
 
     this.innerHTML = `
 <div class="grid gap-y-6 gap-x-4 sm:grid-cols-6">
@@ -12,7 +16,7 @@ class ChatParameters extends HTMLElement {
     <label for="temperature" class="block text-sm font-medium leading-6 text-gray-900">temperature
       (randomness)</label>
     <div class="mt-2">
-      <input type="number" value="1" min="0.1" max="1" step="0.01" name="temperature"
+      <input type="number" value="${temperature}" min="0.1" max="1" step="0.01" name="temperature"
         id="temperature"
         class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
     </div>
@@ -26,7 +30,7 @@ class ChatParameters extends HTMLElement {
     <label for="top_p" class="block text-sm font-medium leading-6 text-gray-900">top_p
       (probability)</label>
     <div class="mt-2">
-      <input type="number" value="1" min="0.01" max="1" step="0.01" name="top_p" id="top_p"
+      <input type="number" value="${top_p}" min="0.01" max="1" step="0.01" name="top_p" id="top_p"
         class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
     </div>
     <p class="mt-2 text-xs text-gray-500">
@@ -39,7 +43,7 @@ class ChatParameters extends HTMLElement {
     <label for="presence_penalty"
       class="block text-sm font-medium leading-6 text-gray-900">presence_penalty</label>
     <div class="mt-2">
-      <input type="number" value="0" min="0" max="2" step="0.01" name="presence_penalty"
+      <input type="number" value="${presence_penalty}" min="0" max="2" step="0.01" name="presence_penalty"
         id="presence_penalty"
         class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
     </div>
@@ -53,7 +57,7 @@ class ChatParameters extends HTMLElement {
     <label for="frequency_penalty"
       class="block text-sm font-medium leading-6 text-gray-900">frequency_penalty</label>
     <div class="mt-2">
-      <input type="number" value="0" min="0" max="2" step="0.01" name="frequency_penalty"
+      <input type="number" value="${frequency_penalty}" min="0" max="2" step="0.01" name="frequency_penalty"
         id="frequency_penalty"
         class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
     </div>
@@ -66,13 +70,13 @@ class ChatParameters extends HTMLElement {
 `
   }
 
-  attributeChangedCallback (name, oldValue, newValue) {
-    if (oldValue === newValue) {
-      return;
-    }
+  // attributeChangedCallback (name, oldValue, newValue) {
+  //   if (oldValue === newValue) {
+  //     return;
+  //   }
 
-    this.querySelector(`#${name}`).value = newValue
-  }
+  //   this.querySelector(`#${name}`).value = newValue
+  // }
 
 }
 

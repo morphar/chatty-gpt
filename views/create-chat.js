@@ -3,6 +3,7 @@ import detectOS from '../js/detect-os.js'
 
 class CreateChat extends HTMLElement {
   #controller
+  #submitShortcut
 
   constructor () {
     super()
@@ -12,20 +13,28 @@ class CreateChat extends HTMLElement {
     this.attachShadow({ mode: 'open' })
 
     const os = detectOS()
-    let submitShortcut = ''
+    this.#submitShortcut = ''
     if (os === 'Windows' || os === 'Linux') {
-      submitShortcut = '<kbd class="items-center rounded border border-gray-200 px-1">Ctrl</kbd>'
-      submitShortcut += '<span class="text-gray-500"> + </span>'
-      submitShortcut += '<kbd class="items-center rounded border border-gray-200 px-1">↵</kbd>'
+      this.#submitShortcut = '<kbd class="items-center rounded border border-gray-200 px-1">Ctrl</kbd>'
+      this.#submitShortcut += '<span class="text-gray-500"> + </span>'
+      this.#submitShortcut += '<kbd class="items-center rounded border border-gray-200 px-1">↵</kbd>'
     } else if (os === 'macOS') {
-      submitShortcut = '<kbd class="items-center rounded border border-gray-200 px-1">⌘</kbd>'
-      submitShortcut += '<span class="text-gray-500"> + </span>'
-      submitShortcut += '<kbd class="items-center rounded border border-gray-200 px-1">↵</kbd>'
+      this.#submitShortcut = '<kbd class="items-center rounded border border-gray-200 px-1">⌘</kbd>'
+      this.#submitShortcut += '<span class="text-gray-500"> + </span>'
+      this.#submitShortcut += '<kbd class="items-center rounded border border-gray-200 px-1">↵</kbd>'
     }
+  }
+
+  connectedCallback () {
+    // Set defaults or use user's previous selections
+    let model = localStorage.getItem('model') || 'gpt-3.5-turbo'
+    let temperature = localStorage.getItem('temperature') || 0.7
+    let top_p = localStorage.getItem('top_p') || 1.0
+    let presence_penalty = localStorage.getItem('presence_penalty') || 0.0
+    let frequency_penalty = localStorage.getItem('frequency_penalty') || 0.0
 
     this.shadowRoot.innerHTML = `
 <link href="css/global.min.css" rel="stylesheet">
-
 
 <div id="main-content" class="mx-auto max-w-4xl px-8 sm:px-6 py-6">
 
@@ -41,12 +50,12 @@ class CreateChat extends HTMLElement {
           <div class="mt-2">
             <select id="model" name="model"
               class="block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
-              <option selected value="gpt-3.5-turbo" selected>gpt-3.5-turbo</option>
-              <option value="gpt-3.5-turbo-0301">gpt-3.5-turbo-0301</option>
-              <option value="gpt-4">gpt-4</option>
-              <option value="gpt-4-0314">gpt-4-0314</option>
-              <option value="gpt-4-32k">gpt-4-32k</option>
-              <option value="gpt-4-32k-0314">gpt-4-32k-0314</option>
+              <option ${model === 'gpt-3.5-turbo' ? ' selected' : ''} value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+              <option ${model === 'gpt-3.5-turbo-0301' ? ' selected' : ''} value="gpt-3.5-turbo-0301">gpt-3.5-turbo-0301</option>
+              <option ${model === 'gpt-4' ? ' selected' : ''} value="gpt-4">gpt-4</option>
+              <option ${model === 'gpt-4-0314' ? ' selected' : ''} value="gpt-4-0314">gpt-4-0314</option>
+              <option ${model === 'gpt-4-32k' ? ' selected' : ''} value="gpt-4-32k">gpt-4-32k</option>
+              <option ${model === 'gpt-4-32k-0314' ? ' selected' : ''} value="gpt-4-32k-0314">gpt-4-32k-0314</option>
             </select>
           </div>
         </div>
@@ -64,7 +73,12 @@ class CreateChat extends HTMLElement {
             </dt>
 
             <dd id="advanced-settings" class="hidden mt-6">
-              <chat-parameters></chat-parameters>
+              <chat-parameters
+                temperature="${temperature}"
+                top_p="${top_p}"
+                presence_penalty="${presence_penalty}"
+                frequency_penalty="${frequency_penalty}">
+              </chat-parameters>
 
               <div class="mt-6 sm:col-span-6">
                 <label for="system" class="block text-sm font-medium leading-6 text-gray-900">System
@@ -88,7 +102,7 @@ class CreateChat extends HTMLElement {
               placeholder="Which code editor is better? Emacs or vim?"
               class="block w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:py-1.5 sm:text-sm sm:leading-6"></textarea>
     <div class="absolute right-1 bottom-2.5 font-sans text-xs text-gray-400">
-      ${submitShortcut}
+      ${this.#submitShortcut}
     </div>
 
           </div>
@@ -107,9 +121,7 @@ class CreateChat extends HTMLElement {
   </form>
 </div>
 `
-  }
 
-  connectedCallback () {
     this.shadowRoot.querySelector('#toggle-advanced').addEventListener(
       'click',
       this.#toggleAdvanced.bind(this),
@@ -172,6 +184,12 @@ class CreateChat extends HTMLElement {
         }
       }
     }
+
+    localStorage.setItem('model', chat['model'])
+    localStorage.setItem('temperature', chat['temperature'])
+    localStorage.setItem('top_p', chat['top_p'])
+    localStorage.setItem('presence_penalty', chat['presence_penalty'])
+    localStorage.setItem('frequency_penalty', chat['frequency_penalty'])
 
     if (chat.system) {
       chat.messages.push({ 'role': 'system', 'content': chat.system })
