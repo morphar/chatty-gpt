@@ -35,24 +35,23 @@ Vite will help you keep all external dependencies local (served by you) and up t
 Using Web Components alone, will only work for modern browsers, so you might as well go Framework shopping, if you need to support any browser that is no longer supported by their creators (e.g. Internet Explorer, older Chrome, Safari, etc.).  
 
 ## TODO
- - [ ] When chat history becomes too big, only use the last _n_ messages
+ - [ ] It should be possible to delete a chat
+ - [ ] Mark the active chat in the left menu
  - [ ] When creating a new chat, suggest system messages, based on previously used system messages
+ - [ ] Make the list of chats searchable (simple header content, word comparison?)
+ - [ ] Implement the moderation API
  - [ ] Add an abort controller to the OpenAI calls
  - [ ] Settings for the chat (including the name)
- - [ ] It should be possible to delete a chat
  - [ ] Make sure that changes to chat settings are used immediately after
  - [ ] Add notifications for success and error actions
  - [ ] (Re-)generate streaming response
  - [ ] Icon or button, to re-generate last response
  - [ ] Come up with an indicator for when the stream is done (or working - like the ... indicator that openai uses) 
- - [ ] Scroll when appropriate
-   - [ ] Scroll to bottom on load
-   - [ ] Scroll to bottom on stream (when already at bottom - check before inserting delta)
-   - [ ] Scroll to bottom, when inserting new message
  - [ ] Add header on code examples, should contain language and a copy button/link (:has doesn't work in firefox...)
 
 ## TODO later / maybe
  - [ ] Add some template system messages (e.g. frontend developer, Go developer, marketing expert, ...)
+ - [ ] Make it mobile friendly
 
 ## UI / UX TODO
  - [ ] Dismiss modals with [ESC]
