@@ -48,8 +48,10 @@ Using Web Components alone, will only work for modern browsers, so you might as 
  - [ ] Icon or button, to re-generate last response
  - [ ] Come up with an indicator for when the stream is done (or working - like the ... indicator that openai uses) 
  - [ ] Add header on code examples, should contain language and a copy button/link (:has doesn't work in firefox...)
+ - [ ] Add a way to inject helpful prompts into system messages and messages. Start with the advice in the [Prompt Engineering Course](https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/)
 
 ## TODO later / maybe
+ - [ ] Consider using the official [token counter](github.com/openai/tiktoken/tree/main) ([Rust source](https://github.com/openai/tiktoken/blob/main/src/lib.rs)?)
  - [ ] Add some template system messages (e.g. frontend developer, Go developer, marketing expert, ...)
  - [ ] Make it mobile friendly
 

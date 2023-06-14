@@ -51,11 +51,13 @@ class CreateChat extends HTMLElement {
             <select id="model" name="model"
               class="block rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm sm:leading-6">
               <option ${model === 'gpt-3.5-turbo' ? ' selected' : ''} value="gpt-3.5-turbo">gpt-3.5-turbo</option>
-              <option ${model === 'gpt-3.5-turbo-0301' ? ' selected' : ''} value="gpt-3.5-turbo-0301">gpt-3.5-turbo-0301</option>
+              <option ${model === 'gpt-3.5-turbo-16k' ? ' selected' : ''} value="gpt-3.5-turbo-16k">gpt-3.5-turbo-16k</option>
+              <option ${model === 'gpt-3.5-turbo-0613' ? ' selected' : ''} value="gpt-3.5-turbo-0613">gpt-3.5-turbo-0613</option>
+              <option ${model === 'gpt-3.5-turbo-16k-0613' ? ' selected' : ''} value="gpt-3.5-turbo-16k-0613">gpt-3.5-turbo-16k-0613</option>
               <option ${model === 'gpt-4' ? ' selected' : ''} value="gpt-4">gpt-4</option>
-              <option ${model === 'gpt-4-0314' ? ' selected' : ''} value="gpt-4-0314">gpt-4-0314</option>
+              <option ${model === 'gpt-4-0613' ? ' selected' : ''} value="gpt-4-0613">gpt-4-0613</option>
               <option ${model === 'gpt-4-32k' ? ' selected' : ''} value="gpt-4-32k">gpt-4-32k</option>
-              <option ${model === 'gpt-4-32k-0314' ? ' selected' : ''} value="gpt-4-32k-0314">gpt-4-32k-0314</option>
+              <option ${model === 'gpt-4-32k-0613' ? ' selected' : ''} value="gpt-4-32k-0613">gpt-4-32k-0613</option>
             </select>
           </div>
         </div>
